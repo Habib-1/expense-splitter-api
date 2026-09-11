@@ -15,7 +15,18 @@ POST http://127.0.0.1:8000/login/ HTTP/1.1
 Content-Type: application/json
 
 {
-    "email":"habib@gmail.com",
-    "password":"admin123"
+    "email":"kaniz@gmail.com",
+    "password":"admin123@"
 }
+
+
+###
+POST http://127.0.0.1:8000/api/group/  HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzg5MTUyNzA5LCJpYXQiOjE3ODkxNTI0MDksImp0aSI6Ijg0MGU5NjllM2E5NDRlZmRhYWJiYzYxZTc3OTYxODQ0IiwidXNlcl9pZCI6IjIifQ.EJFq6XyqVCRdVUAK7CoH-DsmPCt_sEQf5koViaGpR54
+
+{    
+    "name":"Sylhet Border Hiking"
+}
+
 

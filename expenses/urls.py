@@ -12,4 +12,5 @@ urlpatterns = [
         AddMemberView.as_view(),
         name="add-member",
     ),
+    
 ]

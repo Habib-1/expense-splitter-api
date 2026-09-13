@@ -2,8 +2,8 @@ POST http://127.0.0.1:8000/auth/register/ HTTP/1.1
 Content-Type: application/json
 
 {
-    "username": "tinni",
-    "email": "tinni@gmail.com",
+    "username": "tinni1",
+    "email": "tinni1@gmail.com",
     "first_name": "Tasnim Afrose",
     "last_name": "Tinni",
     "password": "admin123@",
@@ -21,9 +21,9 @@ Content-Type: application/json
 
 
 ###
-POST http://127.0.0.1:8000/api/group/  HTTP/1.1
+POST http://127.0.0.1:8000/api/groups/  HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzg5MTUyNzA5LCJpYXQiOjE3ODkxNTI0MDksImp0aSI6Ijg0MGU5NjllM2E5NDRlZmRhYWJiYzYxZTc3OTYxODQ0IiwidXNlcl9pZCI6IjIifQ.EJFq6XyqVCRdVUAK7CoH-DsmPCt_sEQf5koViaGpR54
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzg5MzI1NzM1LCJpYXQiOjE3ODkzMjU0MzUsImp0aSI6ImZjMTBkMDYxYTk0NjRlMTk5NmI5YzU4NTMzNDliZGIzIiwidXNlcl9pZCI6IjIifQ.6qP2SR9sYNK1i-nBzmWMInYTk5UST6KjMFHJgl8z1Uk
 
 {    
     "name":"Sylhet Border Hiking"
@@ -34,13 +34,43 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiY
 
 POST http://127.0.0.1:8000/api/groups/1/members/ HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzg5MTkyMzYyLCJpYXQiOjE3ODkxOTIwNjIsImp0aSI6IjM0OTlkMTdkZTBhOTQyMjg5NmUyNjA4YjNlMTU2MjE1IiwidXNlcl9pZCI6IjIifQ.0dRFUwBtqbrTc-bNY_4SnOKqbg-z3S7fnbbQcxgifKk
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzg5MzI1ODYxLCJpYXQiOjE3ODkzMjU1NjEsImp0aSI6IjI2NmEzNTFhYWQwNTQyZjI4NDY0OTg1Yjc0OTU2OTg1IiwidXNlcl9pZCI6IjMifQ.mDAUpwgW2HSaasYwQhdXh-X1evEdlgrBd13OjUXrZl4
 
 {    
     "username":"tinni"
 }
 
 ###
-GET http://127.0.0.1:8000/api/group/1/ HTTP/1.1
+GET http://127.0.0.1:8000/api/groups/1/ HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzg5MTk2MjU5LCJpYXQiOjE3ODkxOTU5NTksImp0aSI6ImM3ZDJmOWQxMTlhODQ2ZDBhYTA4ZmYyZmVhMTM5NjBiIiwidXNlcl9pZCI6IjIifQ.fsqegv491RN5mYJ270JVM3YxCKyBxg2MN0SNt3L0gPI
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzg5MzI2MTE5LCJpYXQiOjE3ODkzMjU4MTksImp0aSI6IjExZTM0NDljMzBjODRiZmY5YjQ0ZTE2Yzk1MGVmYzk3IiwidXNlcl9pZCI6IjIifQ.BV3k0G2l_o-OPP6savhtaM7EMqtamG9E5VO5V7Z9Z5w
+
+
+###
+POST http://127.0.0.1:8000/api/groups/1/expenses/ HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzg5MzI2MTE5LCJpYXQiOjE3ODkzMjU4MTksImp0aSI6IjExZTM0NDljMzBjODRiZmY5YjQ0ZTE2Yzk1MGVmYzk3IiwidXNlcl9pZCI6IjIifQ.BV3k0G2l_o-OPP6savhtaM7EMqtamG9E5VO5V7Z9Z5w
+
+{    
+    "paid_by": 2,
+    "amount": "3000.00",
+    "description": "lauch"
+
+}
+
+###
+GET http://127.0.0.1:8000/api/groups/1/expenses/3 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzg5MzIyMTEyLCJpYXQiOjE3ODkzMjE4MTIsImp0aSI6ImYwM2U5ODYyNGQ4NzQ5M2I5MTM5NTRlZWEyYmI0YWRhIiwidXNlcl9pZCI6IjIifQ.fHPhGAWoEYjp29xeUmKtLMrFIJBe0_FVimbBupKuDf0
+
+###
+PUT http://127.0.0.1:8000/api/groups/1/expenses/3/ HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzg5MzI2OTA2LCJpYXQiOjE3ODkzMjY2MDYsImp0aSI6ImIyN2ZlZmMxODU5OTRiMzY4YjI1MDJlY2I2ZGNmNWVhIiwidXNlcl9pZCI6IjIifQ._FTTP4fNZL1zJhr_lvNu_SUllTlNgH8lFRYmY1LF2oE
+
+{    
+    "paid_by": 2,
+    "amount": "5000.00",
+    "description": "lauch"
+
+}

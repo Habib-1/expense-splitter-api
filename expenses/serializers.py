@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from . models import Group,GroupMembership
+from . models import Group,GroupMembership,Expense,ExpenseShare
 
 
 class GroupMembershipSerializer(serializers.ModelSerializer):
@@ -21,3 +21,15 @@ class GroupSerializer(serializers.ModelSerializer):
         read_only_fields=('id','group_admin','created_at','members')
 
 
+class ExpenseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Expense
+        fields = [
+            "id",
+            "group",
+            "paid_by",
+            "amount",
+            "description",
+            "created_at",
+        ]
+        read_only_fields=['id','group','created_at']

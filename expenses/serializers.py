@@ -14,11 +14,11 @@ class GroupMembershipSerializer(serializers.ModelSerializer):
 
 class GroupSerializer(serializers.ModelSerializer):
     group_admin=serializers.CharField(source='created_by.username',read_only=True)
-    members=GroupMembershipSerializer(many=True,source='membership')
+    members=GroupMembershipSerializer(many=True,source='membership',read_only=True)
     class Meta:
         model=Group
         fields=('id','name','group_admin','created_at','members')
-        read_only_fields=('id','group_admin','created_at','members')
+        read_only_fields=('id','group_admin','created_at',)
 
 
 class ExpenseSerializer(serializers.ModelSerializer):

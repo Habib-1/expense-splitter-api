@@ -1,6 +1,6 @@
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
-from .views import GroupViewSet,AddMemberView,ExpenseViewSet
+from .views import GroupViewSet,AddMemberView,ExpenseViewSet,RemoveMemberView
 router=DefaultRouter()
 router.register('groups',GroupViewSet,basename='groups')
 
@@ -12,6 +12,11 @@ urlpatterns = [
         "groups/<int:group_id>/members/",
         AddMemberView.as_view(),
         name="add-member",
+    ),
+    path(
+        "groups/<int:group_id>/members/<int:pk>/",
+        RemoveMemberView.as_view(),
+        name="group-member-delete"
     ),
     path(
         'groups/<int:group_id>/expenses/'

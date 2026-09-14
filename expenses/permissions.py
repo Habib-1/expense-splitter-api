@@ -30,4 +30,6 @@ class IsGroupAdmin(BasePermission):
             return False
        
         return group.created_by==request.user
+    
+    
 

@@ -190,7 +190,8 @@ Authorization: Bearer {{adminToken}}
 
 {
     "amount": "3000.00",
-    "description": "Lunch"
+    "description": "Lunch",
+    "spliter_list": [2, 3]
 }
 
 ### [PASS - 201] Karim (member) creates an expense -> paid_by auto = Karim

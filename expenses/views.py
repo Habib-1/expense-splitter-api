@@ -9,6 +9,7 @@ from .models import Group,GroupMembership,Expense,ExpenseShare
 from django.contrib.auth import get_user_model
 User=get_user_model()
 from .permissions import IsGroupAdmin,IsGroupMember,IsExpenseOwner
+from .services import create_expense_share
 # Create your views here.
 
 
@@ -66,7 +67,6 @@ class RemoveMemberView(generics.DestroyAPIView):
 
 
 class ExpenseViewSet(viewsets.ModelViewSet):
-
     serializer_class=ExpenseSerializer
 
     def get_queryset(self):
@@ -80,7 +80,41 @@ class ExpenseViewSet(viewsets.ModelViewSet):
             Group,
             id=group_id
             )
-        serializer.save(group=group,paid_by=self.request.user)
+        
+        spliter_list = serializer.validated_data.pop('splitter_list', None)
+
+        expense=serializer.save(group=group,paid_by=self.request.user)
+
+        if not spliter_list:
+            spliter_list = list(
+                GroupMembership.objects.filter(group=group).values_list('user_id', flat=True)
+            )
+        create_expense_share(
+            expense_id=expense.id,
+            amount=expense.amount,
+            spliter_list=spliter_list
+            )
+
+    def perform_update(self, serializer):
+        expense = self.get_object()
+        old_amount = expense.amount
+
+        splitter_list = serializer.validated_data.pop('splitter_list', None)
+        updated_expense = serializer.save()
+
+
+        if splitter_list or updated_expense.amount != old_amount:
+            if not splitter_list:
+                splitter_list = list(
+                    updated_expense.shares.values_list('user_id', flat=True)
+                )
+            updated_expense.shares.all().delete()
+            create_expense_share(
+                expense_id=updated_expense.id,
+                amount=updated_expense.amount,
+                spliter_list=splitter_list
+            )
+
 
     def get_permissions(self):
         if self.action in ["update", "partial_update", "destroy"]:

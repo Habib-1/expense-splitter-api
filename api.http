@@ -1,87 +1,320 @@
 @baseUrl = http://127.0.0.1:8000
-@accessToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzg5NDExMDQ0LCJpYXQiOjE3ODk0MDkyNDQsImp0aSI6IjI1YWEyOGM3ODg4ZTQ1M2M4M2U2Y2YxNTQ4NzU1ZjgwIiwidXNlcl9pZCI6IjQifQ.d_yD2ErO5E5lAo6O5ZqTy0L6QdJSZqBuKhT15qGVc8w
-### Register
+
+# ==========================================================
+# TOKENS - প্রতিটা লগিন করার পর নিচের ভ্যারিয়েবলে বসিয়ে নাও
+# ==========================================================
+@adminToken = PASTE_RAHIM_TOKEN_HERE
+@memberToken = PASTE_KARIM_TOKEN_HERE
+@outsiderToken = PASTE_SALIM_TOKEN_HERE
+
+# ==========================================================
+# SECTION 0: SETUP - 3 জন ইউজার রেজিস্টার/লগিন
+# Rahim  -> Group Admin (creator)
+# Karim  -> Group Member (later added by Rahim)
+# Salim  -> Outsider (কোনো group-এর member না)
+# ==========================================================
+
+### Register Rahim (হবে Group Admin)
 POST {{baseUrl}}/auth/register/
 Content-Type: application/json
 
 {
-    "username": "tinni1",
-    "email": "tinni1@gmail.com",
-    "first_name": "Tasnim Afrose",
-    "last_name": "Tinni",
+    "username": "rahim",
+    "email": "rahim@gmail.com",
+    "first_name": "Rahim",
+    "last_name": "Uddin",
     "password": "admin123@",
     "password2": "admin123@"
 }
 
+### Register Karim (হবে Group Member)
+POST {{baseUrl}}/auth/register/
+Content-Type: application/json
 
-### Login
+{
+    "username": "karim",
+    "email": "karim@gmail.com",
+    "first_name": "Karim",
+    "last_name": "Hossain",
+    "password": "admin123@",
+    "password2": "admin123@"
+}
+
+### Register Salim (Outsider - কোনো group-এ থাকবে না)
+POST {{baseUrl}}/auth/register/
+Content-Type: application/json
+
+{
+    "username": "salim",
+    "email": "salim@gmail.com",
+    "first_name": "Salim",
+    "last_name": "Ahmed",
+    "password": "admin123@",
+    "password2": "admin123@"
+}
+
+### Login Rahim -> token copy করে @adminToken এ বসাও
 POST {{baseUrl}}/login/
 Content-Type: application/json
 
 {
-    "email": "tinni1@gmail.com",
+    "email": "rahim@gmail.com",
+    "password": "admin123@"
+}
+
+### Login Karim -> token copy করে @memberToken এ বসাও
+POST {{baseUrl}}/login/
+Content-Type: application/json
+
+{
+    "email": "karim@gmail.com",
+    "password": "admin123@"
+}
+
+### Login Salim -> token copy করে @outsiderToken এ বসাও
+POST {{baseUrl}}/login/
+Content-Type: application/json
+
+{
+    "email": "salim@gmail.com",
     "password": "admin123@"
 }
 
 
-### Create Group
+# ==========================================================
+# SECTION 1: GROUP CRUD
+# ==========================================================
+
+### [PASS] Rahim creates a group -> সে-ই admin/creator হবে
 POST {{baseUrl}}/api/groups/
 Content-Type: application/json
-Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{adminToken}}
 
 {
-    "name": "Jaflong Tour 2"
+    "name": "Jaflong Tour"
 }
 
-###  Group list
+### [PASS] Rahim lists groups -> শুধু নিজের group(গুলো) দেখবে (get_queryset filter)
 GET {{baseUrl}}/api/groups/
+Authorization: Bearer {{adminToken}}
+
+### [EXPECTED: EMPTY or 403 depending on queryset] Salim lists groups -> কোনো group নেই তার
+GET {{baseUrl}}/api/groups/
+Authorization: Bearer {{outsiderToken}}
+
+### [PASS] Rahim retrieves his group detail (group id মিলিয়ে নাও)
+GET {{baseUrl}}/api/groups/1/
+Authorization: Bearer {{adminToken}}
+
+### [PASS - 200] Rahim (admin/creator) updates group name
+PUT {{baseUrl}}/api/groups/1/
 Content-Type: application/json
-Authorization: Bearer {{accessToken}}
-
-
-
-### Add Member
-POST {{baseUrl}}/api/groups/2/members/
-Content-Type: application/json
-Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{adminToken}}
 
 {
-    "username": "tinni1"
+    "name": "Jaflong Tour - Updated"
 }
 
+### [FAIL - 403 expected] Karim (not yet a member) tries to update group
+PUT {{baseUrl}}/api/groups/1/
+Content-Type: application/json
+Authorization: Bearer {{memberToken}}
 
-### Get Group
-GET {{baseUrl}}/api/groups/3/
-Authorization: Bearer {{accessToken}}
+{
+    "name": "Hacked Name"
+}
 
-### remove member from perticular group
-DELETE http://127.0.0.1:8000/api/groups/2/members/2/
-Authorization: Bearer {{accessToken}}
+### [FAIL - 403 expected] Salim (outsider) tries to delete group
+DELETE {{baseUrl}}/api/groups/1/
+Authorization: Bearer {{outsiderToken}}
 
-### Create Expense
+
+# ==========================================================
+# SECTION 2: MEMBERSHIP - ADD/REMOVE
+# ==========================================================
+
+### [PASS - 201] Rahim (admin) adds Karim as a member
+POST {{baseUrl}}/api/groups/1/members/
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "username": "karim"
+}
+
+### [FAIL - 400 expected] Rahim tries adding Karim again -> duplicate membership
+POST {{baseUrl}}/api/groups/1/members/
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "username": "karim"
+}
+
+### [FAIL - 403 expected] Karim (normal member, not admin) tries to add Salim
+POST {{baseUrl}}/api/groups/1/members/
+Content-Type: application/json
+Authorization: Bearer {{memberToken}}
+
+{
+    "username": "salim"
+}
+
+### [FAIL - 403 expected] Salim (outsider, not even member) tries to add himself
+POST {{baseUrl}}/api/groups/1/members/
+Content-Type: application/json
+Authorization: Bearer {{outsiderToken}}
+
+{
+    "username": "salim"
+}
+
+### [FAIL - 403 expected] Karim (not admin) tries removing a member (membership id মিলিয়ে নাও)
+DELETE {{baseUrl}}/api/groups/1/members/2/
+Authorization: Bearer {{memberToken}}
+
+### [PASS - 204] Rahim (admin) removes Karim from group (test-এর শেষে, বাকি টেস্টের আগে না)
+# DELETE {{baseUrl}}/api/groups/1/members/2/
+# Authorization: Bearer {{adminToken}}
+# ^ এই টেস্টটা শেষে চালাবে, কারণ পরের Expense টেস্টে Karim-কে member থাকতে হবে
+
+
+# ==========================================================
+# SECTION 3: EXPENSE - CREATE / LIST
+# ==========================================================
+
+### [PASS - 201] Rahim (admin, also a member) creates an expense -> paid_by auto = Rahim
 POST {{baseUrl}}/api/groups/1/expenses/
 Content-Type: application/json
-Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{adminToken}}
 
 {
-    "paid_by": 2,
     "amount": "3000.00",
-    "description": "lauch"
+    "description": "Lunch"
 }
 
-
-### Get Expense
-GET {{baseUrl}}/api/groups/1/expenses/
-Authorization: Bearer {{accessToken}}
-
-
-### Update Expense
-PUT {{baseUrl}}/api/groups/1/expenses/3/
+### [PASS - 201] Karim (member) creates an expense -> paid_by auto = Karim
+POST {{baseUrl}}/api/groups/1/expenses/
 Content-Type: application/json
-Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{memberToken}}
 
 {
-    "paid_by": 2,
-    "amount": "5000.00",
-    "description": "lauch"
+    "amount": "1500.00",
+    "description": "Boat ride"
+}
+
+### [FAIL - 403 expected] Salim (outsider) tries to create expense
+POST {{baseUrl}}/api/groups/1/expenses/
+Content-Type: application/json
+Authorization: Bearer {{outsiderToken}}
+
+{
+    "amount": "500.00",
+    "description": "Snacks"
+}
+
+### [PASS - 200] Rahim (member) lists expenses
+GET {{baseUrl}}/api/groups/1/expenses/
+Authorization: Bearer {{adminToken}}
+
+### [PASS - 200] Karim (member) lists expenses
+GET {{baseUrl}}/api/groups/1/expenses/
+Authorization: Bearer {{memberToken}}
+
+### [FAIL - 403 expected] Salim (outsider) tries to list expenses
+GET {{baseUrl}}/api/groups/1/expenses/
+Authorization: Bearer {{outsiderToken}}
+
+### [PASS - 200] Any member retrieves a single expense detail (expense id মিলিয়ে নাও)
+GET {{baseUrl}}/api/groups/1/expenses/1/
+Authorization: Bearer {{memberToken}}
+
+
+# ==========================================================
+# SECTION 4: EXPENSE - UPDATE / DELETE (আসল permission টেস্ট)
+# ধরে নিচ্ছি: expense id=1 -> Rahim-এর (paid_by=Rahim)
+#             expense id=2 -> Karim-এর (paid_by=Karim)
+# ==========================================================
+
+### [PASS - 200] Owner (Rahim) updates his own expense (id=1)
+PUT {{baseUrl}}/api/groups/1/expenses/1/
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "amount": "3500.00",
+    "description": "Lunch - updated"
+}
+
+### [PASS - 200] Owner (Karim) updates his own expense (id=2)
+PUT {{baseUrl}}/api/groups/1/expenses/2/
+Content-Type: application/json
+Authorization: Bearer {{memberToken}}
+
+{
+    "amount": "1800.00",
+    "description": "Boat ride - updated"
+}
+
+### [FAIL - 403 expected] Karim tries to update Rahim's expense (id=1) -> not owner, not admin
+PUT {{baseUrl}}/api/groups/1/expenses/1/
+Content-Type: application/json
+Authorization: Bearer {{memberToken}}
+
+{
+    "amount": "9999.00",
+    "description": "Tampered"
+}
+
+### [PASS - 200] Admin (Rahim) updates Karim's expense (id=2) -> admin override works
+PUT {{baseUrl}}/api/groups/1/expenses/2/
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "amount": "2000.00",
+    "description": "Boat ride - admin corrected"
+}
+
+### [FAIL - 403 expected] Salim (outsider) tries to update any expense
+PUT {{baseUrl}}/api/groups/1/expenses/1/
+Content-Type: application/json
+Authorization: Bearer {{outsiderToken}}
+
+{
+    "amount": "1.00",
+    "description": "Hacked"
+}
+
+### [FAIL - 403 expected] Karim tries to delete Rahim's expense (id=1)
+DELETE {{baseUrl}}/api/groups/1/expenses/1/
+Authorization: Bearer {{memberToken}}
+
+### [PASS - 204] Karim deletes his own expense (id=2)
+DELETE {{baseUrl}}/api/groups/1/expenses/2/
+Authorization: Bearer {{memberToken}}
+
+### [PASS - 204] Admin (Rahim) deletes his own expense (id=1)
+DELETE {{baseUrl}}/api/groups/1/expenses/1/
+Authorization: Bearer {{adminToken}}
+
+### [FAIL - 403 or 404 expected] Salim tries to delete any expense
+DELETE {{baseUrl}}/api/groups/1/expenses/1/
+Authorization: Bearer {{outsiderToken}}
+
+
+# ==========================================================
+# SECTION 5: TAMPERING CHECK - paid_by spoof করার চেষ্টা
+# ==========================================================
+
+### [SECURITY CHECK] Karim চেষ্টা করছে paid_by=Rahim (id=1) পাঠিয়ে expense create করতে
+# Expected: paid_by ignore হয়ে serializer.save(paid_by=request.user) থেকে Karim-ই বসবে
+POST {{baseUrl}}/api/groups/1/expenses/
+Content-Type: application/json
+Authorization: Bearer {{memberToken}}
+
+{
+    "paid_by": 1,
+    "amount": "100.00",
+    "description": "Spoof attempt - should still show Karim as paid_by"
 }

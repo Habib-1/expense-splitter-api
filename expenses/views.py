@@ -1,5 +1,5 @@
 
-from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets,status,generics
@@ -8,7 +8,7 @@ from .serializers import GroupSerializer,GroupMembershipSerializer,ExpenseSerial
 from .models import Group,GroupMembership,Expense,ExpenseShare
 from django.contrib.auth import get_user_model
 User=get_user_model()
-from .permissions import IsGroupAdmin,IsGroupMember
+from .permissions import IsGroupAdmin,IsGroupMember,IsExpenseOwner
 # Create your views here.
 
 
@@ -48,6 +48,9 @@ class AddMemberView(generics.CreateAPIView):
         username=self.request.data.get('username')
         user=get_object_or_404(User,username=username)
 
+        if GroupMembership.objects.filter(group=group, user=user).exists():
+            raise ValidationError("This user is already a member of this group.")
+
         serializer.save(group=group,user=user)
 
 
@@ -59,6 +62,9 @@ class RemoveMemberView(generics.DestroyAPIView):
         group_id=self.kwargs["group_id"]
         member=GroupMembership.objects.filter(group=group_id)
         return member
+
+
+
 class ExpenseViewSet(viewsets.ModelViewSet):
 
     serializer_class=ExpenseSerializer
@@ -74,11 +80,11 @@ class ExpenseViewSet(viewsets.ModelViewSet):
             Group,
             id=group_id
             )
-        serializer.save(group=group)
+        serializer.save(group=group,paid_by=self.request.user)
 
     def get_permissions(self):
         if self.action in ["update", "partial_update", "destroy"]:
-            self.permission_classes=[IsAuthenticated,IsGroupAdmin]
+            self.permission_classes=[ IsAuthenticated,( IsGroupAdmin | IsExpenseOwner )]
 
         else :
             self.permission_classes=[IsAuthenticated,IsGroupMember]

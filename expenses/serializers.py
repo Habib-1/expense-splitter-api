@@ -32,4 +32,4 @@ class ExpenseSerializer(serializers.ModelSerializer):
             "description",
             "created_at",
         ]
-        read_only_fields=['id','group','created_at']
+        read_only_fields=['id','group', "paid_by",'created_at']

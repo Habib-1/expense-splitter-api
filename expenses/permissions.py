@@ -21,15 +21,24 @@ class IsGroupAdmin(BasePermission):
     def has_permission(self, request, view):
         group_id=view.kwargs.get("group_id")
 
-        if not group_id:
-            return False
-        
-        try:
-            group=Group.objects.get(id=group_id)
-        except Group.DoesNotExist:
-            return False
-       
-        return group.created_by==request.user
+        if group_id:
+            try:
+                group = Group.objects.get(id=group_id)
+            except Group.DoesNotExist:
+                return False
+            return group.created_by == request.user
+        else :
+            return True
     
+    def has_object_permission(self, request, view, obj):
+        group = obj if isinstance(obj, Group) else obj.group
+        return group.created_by == request.user
     
+
+
+class IsExpenseOwner(BasePermission):
+    message = "You can only update or delete expenses you created."
+
+    def has_object_permission(self, request, view, obj):
+        return obj.paid_by==request.user
 

@@ -1,5 +1,6 @@
 
 from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets,status,generics
@@ -9,7 +10,7 @@ from .models import Group,GroupMembership,Expense,ExpenseShare
 from django.contrib.auth import get_user_model
 User=get_user_model()
 from .permissions import IsGroupAdmin,IsGroupMember,IsExpenseOwner
-from .services import create_expense_share
+from .services import create_expense_share,get_group_summary
 # Create your views here.
 
 
@@ -124,3 +125,10 @@ class ExpenseViewSet(viewsets.ModelViewSet):
             self.permission_classes=[IsAuthenticated,IsGroupMember]
         return [permission() for permission in self.permission_classes]
 
+
+class GroupSummaryAPIView(APIView):
+    permission_classes=[IsAuthenticated,(IsGroupAdmin | IsGroupMember)]
+
+    def get(self,request,group_id):
+        summary= get_group_summary(group_id)
+        return Response(summary)

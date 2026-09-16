@@ -15,108 +15,96 @@ def create_expense_share(expense_id, amount, spliter_list):
             share_amount=splited_amount
         ) 
 
+def get_group(group_id):
+    return get_object_or_404(Group,pk=group_id)
 
+def get_group_members(group):
+    return GroupMembership.objects.filter(group=group).select_related('user')
 
-def get_group_summary(group_id):
-    group=get_object_or_404(Group,pk=group_id)
-    members=GroupMembership.objects.filter(group=group).select_related('user')
-    expenses=Expense.objects.filter(group=group)
-    total_expense=expenses.aggregate(
-        total=Sum("amount")
-     )["total"] or Decimal("0")
+def get_group_expenses(group):
+    return Expense.objects.filter(group=group)
 
+def calculate_total_expense(expenses):
+    return expenses.aggregate(total=Sum("amount"))["total"] or Decimal("0")
 
-    member_paid={}
+def calculate_member_financials(members, expenses, group):
+    member_financials = []
 
     for member in members:
-        total_paid = expenses.filter(
-            paid_by=member.user
-        ).aggregate(
+        total_paid = expenses.filter(paid_by=member.user).aggregate(
             total=Sum("amount")
         )["total"] or Decimal("0")
 
-        member_paid[member.user.id] = total_paid
-
-    member_share = {}
-
-    for member in members:
         total_share = ExpenseShare.objects.filter(
             expense__group=group,
             user=member.user
-        ).aggregate(
-            total=Sum("share_amount")
-        )["total"] or Decimal("0")
+        ).aggregate(total=Sum("share_amount"))["total"] or Decimal("0")
 
-        member_share[member.user.id] = total_share
+        balance = total_paid - total_share
 
-    member_balance = {}
+        member_financials.append({
+            "user_id": member.user.id,           
+            "username": member.user.username,   
+            "paid": total_paid,
+            "share": total_share,
+            "balance": balance
+        })
 
-    for member in members:
-        user_id = member.user.id
+    return member_financials
 
-        paid = member_paid.get(user_id, Decimal("0"))
-        share = member_share.get(user_id, Decimal("0"))
-
-        balance = paid - share
-
-        member_balance[user_id] = balance
-
+def calculate_settlements(member_financials):
     debtors = []
     creditors = []
 
-    for member in members:
-        user_id = member.user.id
-        balance = member_balance[user_id]
-
-        if balance < 0:
+    for member in member_financials:
+        if member["balance"] < 0:
             debtors.append({
-                "user": member.user,
-                "amount": abs(balance)
+                "username": member["username"],     
+                "amount": abs(member["balance"]),
             })
-
-        elif balance > 0:
+        elif member["balance"] > 0:
             creditors.append({
-                "user": member.user,
-                "amount": balance
+                "username": member["username"],
+                "amount": member["balance"],
             })
 
     settlements = []
-
     for debtor in debtors:
         for creditor in creditors:
-
-            amount = min(
-                debtor["amount"],
-                creditor["amount"]
-            )
-
-            settlements.append({
-                "from": debtor["user"].username,
-                "to": creditor["user"].username,
-                "amount": amount,
-            })
-
-            debtor["amount"] -= amount
-            creditor["amount"] -= amount
-
             if debtor["amount"] == 0:
                 break
+            if creditor["amount"] == 0:
+                continue    
+            amount = min(debtor["amount"], creditor["amount"])
+            settlements.append({
+                "from": debtor["username"],
+                "to": creditor["username"],
+                "amount": amount,
+            })
+            debtor["amount"] -= amount
+            creditor["amount"] -= amount
+           
 
-    member_data = []
+    return settlements
 
-    for member in members:
-        user_id = member.user.id
+def get_group_summary(group_id):
+    group = get_group(group_id)
 
-        paid = member_paid.get(user_id, Decimal("0"))
-        share = member_share.get(user_id, Decimal("0"))
-        balance = member_balance.get(user_id, Decimal("0"))
+    members = get_group_members(group)
 
-        member_data.append({
-            "username": member.user.username,
-            "paid": paid,
-            "share": share,
-            "balance": balance,
-        })
+    expenses = get_group_expenses(group)
+
+    total_expense = calculate_total_expense(expenses)
+
+    member_financials = calculate_member_financials(
+        members,
+        expenses,
+        group
+    )
+
+    settlements = calculate_settlements(
+        member_financials
+    )
 
     return {
         "group": {
@@ -124,6 +112,6 @@ def get_group_summary(group_id):
             "name": group.name,
         },
         "total_expense": total_expense,
-        "members": member_data,
+        "members": member_financials,
         "settlements": settlements,
     }

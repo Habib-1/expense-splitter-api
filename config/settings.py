@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'accounts',
     'expenses',
+    'drf_spectacular',
 ]
 
 
@@ -138,7 +139,8 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
 
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
  
 }
 
@@ -147,4 +149,12 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'expense-spliter-api',
+    'DESCRIPTION': 'tour budget spliter',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+   
 }

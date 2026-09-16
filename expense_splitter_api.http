@@ -1,0 +1,647 @@
+@baseUrl = http://127.0.0.1:8000
+
+# ==========================================================
+# EXPENSE SPLITTER - FULL API TESTING
+# Fresh test data
+#
+# Users:
+# Admin    : nabil_exp_test
+# Member   : farhan_exp_test
+# Outsider : rafi_exp_test
+#
+# IMPORTANT:
+# 1. Run requests from top to bottom.
+# 2. After login, copy each access token into the variables below.
+# 3. After creating the group, update @groupId.
+# 4. After adding the member, update @membershipId.
+# 5. After creating expenses, update @expenseId1 / @expenseId2.
+# 6. User IDs may differ from the values below. Check registration
+#    response and update @adminUserId / @memberUserId if needed.
+# ==========================================================
+
+@adminToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzg5NTgyOTgyLCJpYXQiOjE3ODk1ODExODIsImp0aSI6IjE0NTY3MDQ1NjE2ZDQ5Y2U4N2ZmYjA5NzgwOWQ1MjUzIiwidXNlcl9pZCI6IjExIn0.VkUD0yP4VlNyIq1aL5DT8RMKASJjzE2nLphGnWpHFpc
+@memberToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzg5NTgzMDMwLCJpYXQiOjE3ODk1ODEyMzAsImp0aSI6Ijc3NWJmM2E4Y2JmMjRhODA5YjU0ZjFkNzFkYTcwZGRlIiwidXNlcl9pZCI6IjEyIn0.WupHhXls1hg0wbZeTPkRVG7L_pANZlG4li479-D9L9U
+@outsiderToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzg5NTgzMDc1LCJpYXQiOjE3ODk1ODEyNzUsImp0aSI6ImRiMzQxOTdmYTcyYzQ0MzI5YTI2MjljOThjMWYzYzNjIiwidXNlcl9pZCI6IjEzIn0.tgaKMAGrL4TW2BzTvIvvfEZiyj9B8UjCGgkwUic7S5A
+
+@adminUserId = 1
+@memberUserId = 2
+@outsiderUserId = 3
+
+@groupId = 1
+@membershipId = 1
+@expenseId1 = 1
+@expenseId2 = 2
+
+
+# ==========================================================
+# SECTION 0 - REGISTER
+# ==========================================================
+
+### 0.1 Register Nabil - Group Admin
+# Expected: 201 Created
+
+POST {{baseUrl}}/auth/register/
+Content-Type: application/json
+
+{
+    "username": "nabil",
+    "email": "nabil@gmail.com",
+    "first_name": "Nabil",
+    "last_name": "Expense",
+    "password": "Nabil@12345",
+    "password2": "Nabil@12345"
+}
+
+
+### 0.2 Register Farhan - Group Member
+# Expected: 201 Created
+
+POST {{baseUrl}}/auth/register/
+Content-Type: application/json
+
+{
+    "username": "farhan",
+    "email": "farhan@gmail.com",
+    "first_name": "Farhan",
+    "last_name": "Expense",
+    "password": "Farhan@12345",
+    "password2": "Farhan@12345"
+}
+
+
+### 0.3 Register Rafi - Outsider
+# Expected: 201 Created
+
+POST {{baseUrl}}/auth/register/
+Content-Type: application/json
+
+{
+    "username": "rafi",
+    "email": "rafi@gmail.com",
+    "first_name": "Rafi",
+    "last_name": "Expense",
+    "password": "Rafi@12345",
+    "password2": "Rafi@12345"
+}
+
+
+# ==========================================================
+# SECTION 1 - LOGIN
+# ==========================================================
+
+### 1.1 Login Nabil
+# Expected: 200 OK
+# Copy access token -> @adminToken
+
+POST {{baseUrl}}/login/
+Content-Type: application/json
+
+{
+    "email": "nabil@gmail.com",
+    "password": "Nabil@12345"
+}
+
+
+### 1.2 Login Farhan
+# Expected: 200 OK
+# Copy access token -> @memberToken
+
+POST {{baseUrl}}/login/
+Content-Type: application/json
+
+{
+    "email": "farhan@gmail.com",
+    "password": "Farhan@12345"
+}
+
+
+### 1.3 Login Rafi
+# Expected: 200 OK
+# Copy access token -> @outsiderToken
+
+POST {{baseUrl}}/login/
+Content-Type: application/json
+
+{
+    "email": "rafi@gmail.com",
+    "password": "Rafi@12345"
+}
+
+
+# ==========================================================
+# SECTION 2 - GROUP CRUD
+# ==========================================================
+
+### 2.1 Nabil creates group
+# Expected: 201 Created
+# Nabil automatically becomes creator/admin and member.
+
+POST {{baseUrl}}/api/groups/
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "name": "Coxs Bazar Weekend Trip"
+}
+
+
+### 2.2 Nabil lists groups
+# Expected: 200 OK
+# The created group should be visible.
+
+GET {{baseUrl}}/api/groups/
+Authorization: Bearer {{adminToken}}
+
+
+### 2.3 Rafi lists groups
+# Expected: 200 OK with empty list
+# Rafi is not a member of any group.
+
+GET {{baseUrl}}/api/groups/
+Authorization: Bearer {{outsiderToken}}
+
+
+### 2.4 Nabil retrieves group
+# Expected: 200 OK
+
+GET {{baseUrl}}/api/groups/{{groupId}}/
+Authorization: Bearer {{adminToken}}
+
+
+### 2.5 Nabil updates group
+# Expected: 200 OK
+
+PUT {{baseUrl}}/api/groups/{{groupId}}/
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "name": "Coxs Bazar Weekend Trip - Updated"
+}
+
+
+### 2.6 Farhan tries to update group before becoming member
+# Expected: 403 Forbidden
+
+PUT {{baseUrl}}/api/groups/{{groupId}}/
+Content-Type: application/json
+Authorization: Bearer {{memberToken}}
+
+{
+    "name": "Unauthorized Group Update"
+}
+
+
+### 2.7 Rafi tries to delete group
+# Expected: 403 Forbidden
+
+DELETE {{baseUrl}}/api/groups/{{groupId}}/
+Authorization: Bearer {{outsiderToken}}
+
+
+# ==========================================================
+# SECTION 3 - MEMBERSHIP
+# ==========================================================
+
+### 3.1 Nabil adds Farhan
+# Expected: 201 Created
+# Copy returned id -> @membershipId
+
+POST {{baseUrl}}/api/groups/{{groupId}}/members/
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "username": "farhan_exp_test"
+}
+
+
+### 3.2 Nabil adds Farhan again
+# Expected: 400 Bad Request
+# Duplicate membership should be rejected.
+
+POST {{baseUrl}}/api/groups/{{groupId}}/members/
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "username": "farhan_exp_test"
+}
+
+
+### 3.3 Farhan tries to add Rafi
+# Expected: 403 Forbidden
+
+POST {{baseUrl}}/api/groups/{{groupId}}/members/
+Content-Type: application/json
+Authorization: Bearer {{memberToken}}
+
+{
+    "username": "rafi_exp_test"
+}
+
+
+### 3.4 Rafi tries to add himself
+# Expected: 403 Forbidden
+
+POST {{baseUrl}}/api/groups/{{groupId}}/members/
+Content-Type: application/json
+Authorization: Bearer {{outsiderToken}}
+
+{
+    "username": "rafi_exp_test"
+}
+
+
+### 3.5 Farhan tries to remove a member
+# Expected: 403 Forbidden
+
+DELETE {{baseUrl}}/api/groups/{{groupId}}/members/{{membershipId}}/
+Authorization: Bearer {{memberToken}}
+
+
+# ==========================================================
+# SECTION 4 - EXPENSE CREATE
+# ==========================================================
+
+### 4.1 Nabil creates custom-split expense
+# Expected: 201 Created
+#
+# Split between Nabil + Farhan.
+# 3000 / 2 = 1500 each.
+#
+# paid_by MUST be Nabil automatically.
+#
+# Copy returned expense id -> @expenseId1
+
+POST {{baseUrl}}/api/groups/{{groupId}}/expenses/
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "amount": "3000.00",
+    "description": "Coxs Bazar Hotel",
+    "splitter_list": [
+        {{adminUserId}},
+        {{memberUserId}}
+    ]
+}
+
+
+### 4.2 Farhan creates equal-split expense
+# Expected: 201 Created
+#
+# No splitter_list means all group members.
+# Current group members = Nabil + Farhan.
+# 1500 / 2 = 750 each.
+#
+# paid_by MUST be Farhan.
+#
+# Copy returned expense id -> @expenseId2
+
+POST {{baseUrl}}/api/groups/{{groupId}}/expenses/
+Content-Type: application/json
+Authorization: Bearer {{memberToken}}
+
+{
+    "amount": "1500.00",
+    "description": "Sea Beach Transport"
+}
+
+
+### 4.3 Rafi tries to create expense
+# Expected: 403 Forbidden
+
+POST {{baseUrl}}/api/groups/{{groupId}}/expenses/
+Content-Type: application/json
+Authorization: Bearer {{outsiderToken}}
+
+{
+    "amount": "500.00",
+    "description": "Unauthorized Snacks"
+}
+
+
+# ==========================================================
+# SECTION 5 - EXPENSE LIST / DETAIL
+# ==========================================================
+
+### 5.1 Nabil lists expenses
+# Expected: 200 OK
+
+GET {{baseUrl}}/api/groups/{{groupId}}/expenses/
+Authorization: Bearer {{adminToken}}
+
+
+### 5.2 Farhan lists expenses
+# Expected: 200 OK
+
+GET {{baseUrl}}/api/groups/{{groupId}}/expenses/
+Authorization: Bearer {{memberToken}}
+
+
+### 5.3 Rafi lists expenses
+# Expected: 403 Forbidden
+
+GET {{baseUrl}}/api/groups/{{groupId}}/expenses/
+Authorization: Bearer {{outsiderToken}}
+
+
+### 5.4 Farhan retrieves expense detail
+# Expected: 200 OK
+
+GET {{baseUrl}}/api/groups/{{groupId}}/expenses/{{expenseId1}}/
+Authorization: Bearer {{memberToken}}
+
+
+### 5.5 Rafi retrieves expense detail
+# Expected: 403 Forbidden
+
+GET {{baseUrl}}/api/groups/{{groupId}}/expenses/{{expenseId1}}/
+Authorization: Bearer {{outsiderToken}}
+
+
+# ==========================================================
+# SECTION 6 - GROUP SUMMARY / SETTLEMENT
+# ==========================================================
+
+### 6.1 Nabil checks group summary
+# Expected: 200 OK
+#
+# After expenses:
+# Hotel = 3000
+# Transport = 1500
+# Total = 4500
+#
+# Members should show:
+# - paid
+# - share
+# - balance
+#
+# Settlements should also be returned.
+
+GET {{baseUrl}}/api/groups/{{groupId}}/summary/
+Authorization: Bearer {{adminToken}}
+
+
+### 6.2 Farhan checks group summary
+# Expected: 200 OK
+
+GET {{baseUrl}}/api/groups/{{groupId}}/summary/
+Authorization: Bearer {{memberToken}}
+
+
+### 6.3 Rafi checks group summary
+# Expected: 403 Forbidden
+
+GET {{baseUrl}}/api/groups/{{groupId}}/summary/
+Authorization: Bearer {{outsiderToken}}
+
+
+# ==========================================================
+# SECTION 7 - EXPENSE UPDATE
+# ==========================================================
+
+### 7.1 Nabil updates own expense
+# Expected: 200 OK
+# Shares should be recalculated because amount changed.
+
+PUT {{baseUrl}}/api/groups/{{groupId}}/expenses/{{expenseId1}}/
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "amount": "3500.00",
+    "description": "Coxs Bazar Hotel - Updated"
+}
+
+
+### 7.2 Farhan updates own expense
+# Expected: 200 OK
+
+PUT {{baseUrl}}/api/groups/{{groupId}}/expenses/{{expenseId2}}/
+Content-Type: application/json
+Authorization: Bearer {{memberToken}}
+
+{
+    "amount": "1800.00",
+    "description": "Sea Beach Transport - Updated"
+}
+
+
+### 7.3 Farhan tries to update Nabil's expense
+# Expected: 403 Forbidden
+
+PUT {{baseUrl}}/api/groups/{{groupId}}/expenses/{{expenseId1}}/
+Content-Type: application/json
+Authorization: Bearer {{memberToken}}
+
+{
+    "amount": "9999.00",
+    "description": "Unauthorized Update"
+}
+
+
+### 7.4 Nabil updates Farhan's expense
+# Expected: 200 OK
+# Admin override should work.
+
+PUT {{baseUrl}}/api/groups/{{groupId}}/expenses/{{expenseId2}}/
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "amount": "2000.00",
+    "description": "Sea Beach Transport - Admin Updated"
+}
+
+
+### 7.5 Rafi tries to update expense
+# Expected: 403 Forbidden
+
+PUT {{baseUrl}}/api/groups/{{groupId}}/expenses/{{expenseId1}}/
+Content-Type: application/json
+Authorization: Bearer {{outsiderToken}}
+
+{
+    "amount": "1.00",
+    "description": "Hacked Expense"
+}
+
+
+# ==========================================================
+# SECTION 8 - SPLITTER_LIST UPDATE
+# ==========================================================
+
+### 8.1 Nabil changes expense split
+# Expected: 200 OK
+#
+# Amount = 4000
+# Split between Nabil + Farhan
+# Expected share = 2000 each.
+
+PUT {{baseUrl}}/api/groups/{{groupId}}/expenses/{{expenseId1}}/
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "amount": "4000.00",
+    "description": "Coxs Bazar Hotel - Custom Split",
+    "splitter_list": [
+        {{adminUserId}},
+        {{memberUserId}}
+    ]
+}
+
+
+### 8.2 Verify updated expense
+# Expected: 200 OK
+
+GET {{baseUrl}}/api/groups/{{groupId}}/expenses/{{expenseId1}}/
+Authorization: Bearer {{adminToken}}
+
+
+### 8.3 Verify summary after split update
+# Expected: 200 OK
+
+GET {{baseUrl}}/api/groups/{{groupId}}/summary/
+Authorization: Bearer {{adminToken}}
+
+
+# ==========================================================
+# SECTION 9 - PAID_BY SPOOF SECURITY
+# ==========================================================
+
+### 9.1 Farhan tries to set paid_by = Nabil
+# Expected: 201 Created
+#
+# IMPORTANT:
+# Request sends paid_by=Nabil,
+# but response MUST show paid_by=Farhan.
+#
+# paid_by is read_only and perform_create()
+# uses request.user.
+
+POST {{baseUrl}}/api/groups/{{groupId}}/expenses/
+Content-Type: application/json
+Authorization: Bearer {{memberToken}}
+
+{
+    "paid_by": {{adminUserId}},
+    "amount": "100.00",
+    "description": "Paid By Spoof Test"
+}
+
+
+# ==========================================================
+# SECTION 10 - EXPENSE DELETE
+# ==========================================================
+
+### 10.1 Farhan tries to delete Nabil's expense
+# Expected: 403 Forbidden
+
+DELETE {{baseUrl}}/api/groups/{{groupId}}/expenses/{{expenseId1}}/
+Authorization: Bearer {{memberToken}}
+
+
+### 10.2 Farhan deletes own expense
+# Expected: 204 No Content
+
+DELETE {{baseUrl}}/api/groups/{{groupId}}/expenses/{{expenseId2}}/
+Authorization: Bearer {{memberToken}}
+
+
+### 10.3 Nabil deletes own expense
+# Expected: 204 No Content
+
+DELETE {{baseUrl}}/api/groups/{{groupId}}/expenses/{{expenseId1}}/
+Authorization: Bearer {{adminToken}}
+
+
+# ==========================================================
+# SECTION 11 - MEMBERSHIP REMOVAL
+# ==========================================================
+
+### 11.1 Farhan tries to remove member
+# Expected: 403 Forbidden
+
+DELETE {{baseUrl}}/api/groups/{{groupId}}/members/{{membershipId}}/
+Authorization: Bearer {{memberToken}}
+
+
+### 11.2 Nabil removes Farhan
+# Expected: 204 No Content
+#
+# IMPORTANT:
+# Run this only after all Farhan expense tests.
+
+DELETE {{baseUrl}}/api/groups/{{groupId}}/members/{{membershipId}}/
+Authorization: Bearer {{adminToken}}
+
+
+### 11.3 Farhan tries to access summary after removal
+# Expected: 403 Forbidden
+
+GET {{baseUrl}}/api/groups/{{groupId}}/summary/
+Authorization: Bearer {{memberToken}}
+
+
+### 11.4 Farhan tries to list expenses after removal
+# Expected: 403 Forbidden
+
+GET {{baseUrl}}/api/groups/{{groupId}}/expenses/
+Authorization: Bearer {{memberToken}}
+
+
+# ==========================================================
+# SECTION 12 - AUTHENTICATION
+# ==========================================================
+
+### 12.1 No token - group list
+# Expected: 401 Unauthorized
+
+GET {{baseUrl}}/api/groups/
+
+
+### 12.2 No token - group summary
+# Expected: 401 Unauthorized
+
+GET {{baseUrl}}/api/groups/{{groupId}}/summary/
+
+
+### 12.3 No token - expense list
+# Expected: 401 Unauthorized
+
+GET {{baseUrl}}/api/groups/{{groupId}}/expenses/
+
+
+### 12.4 Invalid token
+# Expected: 401 Unauthorized
+
+GET {{baseUrl}}/api/groups/
+Authorization: Bearer invalid_token_123456789
+
+
+# ==========================================================
+# SECTION 13 - FINAL GROUP DELETE
+# ==========================================================
+
+### 13.1 Rafi tries to delete group
+# Expected: 403 Forbidden
+
+DELETE {{baseUrl}}/api/groups/{{groupId}}/
+Authorization: Bearer {{outsiderToken}}
+
+
+### 13.2 Nabil deletes group
+# Expected: 204 No Content
+
+DELETE {{baseUrl}}/api/groups/{{groupId}}/
+Authorization: Bearer {{adminToken}}
+
+
+### 13.3 Verify group deleted
+# Expected: 404 Not Found
+
+GET {{baseUrl}}/api/groups/{{groupId}}/
+Authorization: Bearer {{adminToken}}

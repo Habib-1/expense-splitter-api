@@ -22,7 +22,7 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class ExpenseSerializer(serializers.ModelSerializer):
-    spilter_list=serializers.ListField(
+    splitter_list=serializers.ListField(
         child=serializers.IntegerField(),
         write_only=True,
         required=False
@@ -36,7 +36,7 @@ class ExpenseSerializer(serializers.ModelSerializer):
             "paid_by",
             "amount",
             "description",
-            "spilter_list",
+            "splitter_list",
             "created_at",
         ]
         read_only_fields=['id','group', "paid_by",'created_at']

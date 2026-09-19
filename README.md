@@ -305,7 +305,7 @@ You do **not** need to install Python, PostgreSQL, or Redis separately — Docke
 ### 1. Clone the repository
 
 ```bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
+git clone  https://github.com/Habib-1/expense-splitter-api.git
 cd expense_splitter
 ```
 

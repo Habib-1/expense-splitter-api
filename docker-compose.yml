@@ -66,6 +66,23 @@ services:
       redis:
         condition: service_healthy
     restart: unless-stopped
+  
+  flower:
+    build: .
+    container_name: expense-splitter-flower
+    command: celery -A config flower --port=5555
+    ports:
+      - "5555:5555"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    depends_on:
+      redis:
+        condition: service_healthy
+      celery:
+        condition: service_started
+    restart: unless-stopped
 
 volumes:
   postgres_data:

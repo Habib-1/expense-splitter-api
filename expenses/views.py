@@ -11,6 +11,7 @@ from django.contrib.auth import get_user_model
 User=get_user_model()
 from .permissions import IsGroupAdmin,IsGroupMember,IsExpenseOwner
 from .services import create_expense_share,get_group_summary
+from .tasks import notify_added_to_group,notify_expense_split
 # Create your views here.
 
 
@@ -54,6 +55,7 @@ class AddMemberView(generics.CreateAPIView):
             raise ValidationError("This user is already a member of this group.")
 
         serializer.save(group=group,user=user)
+        notify_added_to_group.delay(user.email, group.name)
 
 
 class RemoveMemberView(generics.DestroyAPIView):

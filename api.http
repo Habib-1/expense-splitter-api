@@ -3,7 +3,7 @@
 # ==========================================================
 # TOKENS - প্রতিটা লগিন করার পর নিচের ভ্যারিয়েবলে বসিয়ে নাও
 # ==========================================================
-@adminToken = PASTE_RAHIM_TOKEN_HERE
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzg5ODIzNTE0LCJpYXQiOjE3ODk4MjE3MTQsImp0aSI6ImU0MWU5M2M3YzQ2MDRkMGE5ZTExNWNmNWQ4MTc0ZTdlIiwidXNlcl9pZCI6IjIifQ.kMxHpoWk6MbSZx6zUEr27lYPq5LUpjdhPK8oQR3j_9w
 @memberToken = PASTE_KARIM_TOKEN_HERE
 @outsiderToken = PASTE_SALIM_TOKEN_HERE
 
@@ -189,8 +189,8 @@ Content-Type: application/json
 Authorization: Bearer {{adminToken}}
 
 {
-    "amount": "3000.00",
-    "description": "Lunch",
+    "amount": "5000.00",
+    "description": "dinner",
     "spliter_list": [2, 3]
 }
 

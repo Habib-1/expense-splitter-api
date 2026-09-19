@@ -170,3 +170,27 @@ SPECTACULAR_SETTINGS = {
 
 CELERY_BROKER_URL = env("CELERY_BROKER_URL")
 CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND")
+
+
+if DEBUG:
+    MAILERS = {
+        "default": {
+            "BACKEND": "django.core.mail.backends.console.EmailBackend",
+        },
+    }
+else:
+    MAILERS = {
+        "default": {
+            "BACKEND": "django.core.mail.backends.smtp.EmailBackend",
+            "OPTIONS": {
+                "host": env("EMAIL_HOST"),
+                "port": env.int("EMAIL_PORT", default=587),
+                "use_tls": env.bool("EMAIL_USE_TLS", default=True),
+                "username": env("EMAIL_HOST_USER"),
+                "password": env("EMAIL_HOST_PASSWORD"),
+                "timeout": 10,
+            },
+        },
+    }
+
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@example.com")

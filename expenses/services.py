@@ -3,17 +3,24 @@ from .models import ExpenseShare,Group,GroupMembership,Expense
 from django.shortcuts import get_object_or_404
 from decimal import Decimal
 from django.db.models import Sum
-
+from .tasks import notify_expense_split
 def create_expense_share(expense_id, amount, spliter_list):
     total_member = len(spliter_list)
     splited_amount = Decimal(amount) / Decimal(total_member)
+    expense = Expense.objects.get(id=expense_id)
 
     for user_id in spliter_list:
-        ExpenseShare.objects.create(
+        share = ExpenseShare.objects.create(
             expense_id=expense_id,
             user_id=user_id,
             share_amount=splited_amount
-        ) 
+        )
+        notify_expense_split.delay(
+            share.user.email,
+            expense.description,
+            str(amount),
+            str(splited_amount)
+        )
 
 def get_group(group_id):
     return get_object_or_404(Group,pk=group_id)

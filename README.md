@@ -517,19 +517,19 @@ Sensitive configuration is kept outside the source code using environment variab
 
 ### Swagger UI
 
-![Swagger UI](./docs/swagger.png)
+![Swagger UI](./docs/swagger.PNG)
 
 ### Postman API Testing
 
-![Postman API Testing](./docs/postman.png)
+![Postman API Testing](./docs/postman.PNG)
 
 ### Django Silk
 
-![Django Silk](./docs/silk.png)
+![Django Silk](./docs/silk.PNG)
 
 ### Celery Flower
 
-![Celery Flower](./docs/flower.png)
+![Celery Flower](./docs/flower.PNG)
 
 ## 📄 License
 

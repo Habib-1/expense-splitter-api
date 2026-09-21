@@ -14,7 +14,8 @@ from .services import create_expense_share,get_group_summary
 from .tasks import notify_added_to_group
 from silk.profiling.profiler import silk_profile
 from django.db.models import Prefetch
-from django.db import transaction
+from django.db import transaction, IntegrityError
+
 # Create your views here.
 
 
@@ -51,6 +52,7 @@ class AddMemberView(generics.CreateAPIView):
     serializer_class=GroupMembershipSerializer
     permission_classes=[IsAuthenticated,IsGroupAdmin]
 
+    @silk_profile(name="member add create query")
     def perform_create(self, serializer):
 
         group_id=self.kwargs["group_id"]
@@ -59,10 +61,11 @@ class AddMemberView(generics.CreateAPIView):
         username=self.request.data.get('username')
         user=get_object_or_404(User,username=username)
 
-        if GroupMembership.objects.filter(group=group, user=user).exists():
+        try:
+            serializer.save(group=group, user=user)
+        except IntegrityError:
             raise ValidationError("This user is already a member of this group.")
-
-        serializer.save(group=group,user=user)
+        
         notify_added_to_group.delay(user.email, group.name)
 
 
@@ -112,13 +115,10 @@ class ExpenseViewSet(viewsets.ModelViewSet):
             spliter_list=spliter_list
             )
     @silk_profile(name="Expense update query")
-    def perform_update(self, serializer):
-        expense = self.get_object()
-        old_amount = expense.amount
-
+    def perform_update(self, serializer): 
+        old_amount = serializer.instance.amount
         splitter_list = serializer.validated_data.pop('splitter_list', None)
         updated_expense = serializer.save()
-
 
         if splitter_list or updated_expense.amount != old_amount:
             if not splitter_list:

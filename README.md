@@ -514,15 +514,20 @@ Sensitive configuration is kept outside the source code using environment variab
 
 ## 📸 Screenshots
 
+## API Documentation & Monitoring
 > Add screenshots to a `docs/` folder and reference them below.
 
-```markdown
-![Swagger UI](docs/swagger.png)
-![Expense API](docs/expense-api.png)
-![Django Silk](docs/silk.png)
-```
+### Swagger UI
+[Swagger UI](docs/swagger.png)
 
----
+### Postman API Testing
+[Postman API Testing](docs/postman.png)
+
+### Django Silk
+[Django Silk](docs/silk.png)
+
+### Celery Flower
+[Celery Flower](docs/flower.png)
 
 ## 📄 License
 

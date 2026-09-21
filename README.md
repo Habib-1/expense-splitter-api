@@ -350,7 +350,7 @@ docker compose ps
 ### 4. Run database migrations
 
 ```bash
-docker compose exec web python manage.py migrate
+docker compose exec app python manage.py migrate
 ```
 
 > Replace `web` with your actual service name if it differs in `docker-compose.yml`.
@@ -358,7 +358,7 @@ docker compose exec web python manage.py migrate
 ### 5. Create a superuser
 
 ```bash
-docker compose exec web python manage.py createsuperuser
+docker compose exec app python manage.py createsuperuser
 ```
 
 ### 6. Access the application
@@ -376,13 +376,13 @@ docker compose exec web python manage.py createsuperuser
 ## 🧪 Running Tests
 
 ```bash
-docker compose exec web pytest
+docker compose exec app pytest
 ```
 
 Run with coverage:
 
 ```bash
-docker compose exec web pytest --cov=.
+docker compose exec app pytest --cov=.
 ```
 
 The API has also been manually tested during development using Postman, the VS Code REST Client, and Swagger UI, covering JWT authentication, group/membership flows, permission handling, expense CRUD, and authorization failures.

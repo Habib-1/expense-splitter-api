@@ -319,3 +319,7 @@ Authorization: Bearer {{memberToken}}
     "amount": "100.00",
     "description": "Spoof attempt - should still show Karim as paid_by"
 }
+
+###
+GET {{baseUrl}}/api/groups/1/summary/
+Authorization: Bearer {{adminToken}}

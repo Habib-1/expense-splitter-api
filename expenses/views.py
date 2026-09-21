@@ -11,7 +11,10 @@ from django.contrib.auth import get_user_model
 User=get_user_model()
 from .permissions import IsGroupAdmin,IsGroupMember,IsExpenseOwner
 from .services import create_expense_share,get_group_summary
-from .tasks import notify_added_to_group,notify_expense_split
+from .tasks import notify_added_to_group
+from silk.profiling.profiler import silk_profile
+from django.db.models import Prefetch
+from django.db import transaction
 # Create your views here.
 
 
@@ -20,14 +23,19 @@ class GroupViewSet(viewsets.ModelViewSet):
     permission_classes=[IsAuthenticated]
 
     def get_queryset(self):
-        return Group.objects.filter(membership__user=self.request.user).distinct()
+        return Group.objects.filter(membership__user=self.request.user).distinct().select_related('created_by').prefetch_related(Prefetch(
+            'membership',
+            queryset=GroupMembership.objects.select_related('user','group')
+            )
+        )
 
     def perform_create(self, serializer):
-        group=serializer.save(created_by=self.request.user)
-        GroupMembership.objects.create(
-            group=group,
-            user=self.request.user
-        )
+        with transaction.atomic():
+            group=serializer.save(created_by=self.request.user)
+            GroupMembership.objects.create(
+                group=group,
+                user=self.request.user
+            )
 
     def get_permissions(self):
         if self.action in ["update", "partial_update", "destroy"]:
@@ -72,11 +80,17 @@ class RemoveMemberView(generics.DestroyAPIView):
 class ExpenseViewSet(viewsets.ModelViewSet):
     serializer_class=ExpenseSerializer
 
+  
     def get_queryset(self):
         group_id=self.kwargs['group_id']
-
         return Expense.objects.filter(group=group_id)
+    
+    @silk_profile(name='Expense List Query')
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
+    
+    @silk_profile(name="Expense create query")
     def perform_create(self, serializer):
         group_id=self.kwargs["group_id"]
         group = get_object_or_404(
@@ -97,7 +111,7 @@ class ExpenseViewSet(viewsets.ModelViewSet):
             amount=expense.amount,
             spliter_list=spliter_list
             )
-
+    @silk_profile(name="Expense update query")
     def perform_update(self, serializer):
         expense = self.get_object()
         old_amount = expense.amount

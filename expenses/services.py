@@ -4,6 +4,9 @@ from django.shortcuts import get_object_or_404
 from decimal import Decimal
 from django.db.models import Sum
 from .tasks import notify_expense_split
+from silk.profiling.profiler import silk_profile
+
+@silk_profile(name="create_expense_share")
 def create_expense_share(expense_id, amount, spliter_list):
     total_member = len(spliter_list)
     splited_amount = Decimal(amount) / Decimal(total_member)
